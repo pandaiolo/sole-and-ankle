@@ -5,6 +5,17 @@ import { COLORS, WEIGHTS } from '../../constants';
 import { formatPrice, pluralize, isNewShoe } from '../../utils';
 import Spacer from '../Spacer';
 
+const VARIANTS = {
+  'on-sale': {
+    color: 'primary',
+    label: 'Sale',
+  },
+  'new-release': {
+    color: 'secondary',
+    label: 'New Release!'
+  }
+}
+
 const ShoeCard = ({
   slug,
   name,
@@ -25,11 +36,16 @@ const ShoeCard = ({
   // both on-sale and new-release, but in this case, `on-sale`
   // will triumph and be the variant used.
   // prettier-ignore
-  const variant = typeof salePrice === 'number'
+  const isOnSale = typeof salePrice === 'number'
+  const variant = isOnSale 
     ? 'on-sale'
     : isNewShoe(releaseDate)
       ? 'new-release'
       : 'default'
+  
+  console.log('varianttrtree6', VARIANTS[variant])
+
+  const v = VARIANTS[variant]
 
   return (
     <Link href={`/shoe/${slug}`}>
@@ -37,29 +53,42 @@ const ShoeCard = ({
         <ImageWrapper>
           <Image alt="" src={imageSrc} />
         </ImageWrapper>
+        {v && <Variant color={v.color}>{v.label}</Variant>}
         <Spacer size={12} />
         <Row>
           <Name>{name}</Name>
-          <Price>{formatPrice(price)}</Price>
+          <Price isOnSale={isOnSale}>{formatPrice(price)}</Price>
         </Row>
         <Row>
           <ColorInfo>{pluralize('Color', numOfColors)}</ColorInfo>
+          {isOnSale && <SalePrice>{formatPrice(salePrice)}</SalePrice>}
         </Row>
       </Wrapper>
     </Link>
   );
 };
 
+const Variant = styled.div` 
+  position: absolute;
+  border-radius: 2px;
+  top: 12px;
+  right: -4px;
+  background-color: ${p => COLORS[p.color]};
+  color: ${COLORS.white};
+  padding: 7px 10px 9px 10px;
+  font-weight:  ${WEIGHTS.bold};
+  font-size: ${14 / 16}rem;
+  `
+
 const Link = styled.a`
   text-decoration: none;
   color: inherit;
   flex: 1;
-  // max-width: 510px;
   min-width: 250px;
 `;
 
 const Wrapper = styled.article`
-  
+  position: relative;
 `;
 
 const ImageWrapper = styled.div`
@@ -76,7 +105,7 @@ const Row = styled.div`
   font-size: 1rem;
   display: flex;
   justify-content: space-between;
-  //margin: 12px 0 4px 0;
+  align-items: baseline;
 `;
 
 const Name = styled.h3`
@@ -84,7 +113,9 @@ const Name = styled.h3`
   color: ${COLORS.gray[900]};
 `;
 
-const Price = styled.span``;
+const Price = styled.span`
+  text-decoration: ${p => p.isOnSale ? 'line-through' : 'inherit'}
+`;
 
 const ColorInfo = styled.p`
   color: ${COLORS.gray[700]};
